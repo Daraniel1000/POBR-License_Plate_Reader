@@ -161,10 +161,14 @@
     <ClCompile Include="MaskFilter.cpp" />
     <ClCompile Include="Framework.cpp" />
     <ClCompile Include="RankFilter.cpp" />
+    <ClCompile Include="Tools.cpp" />
+    <ClCompile Include="Zad2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MaskFilter.h" />
     <ClInclude Include="RankFilter.h" />
+    <ClInclude Include="Tools.h" />
+    <ClInclude Include="Zad2.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

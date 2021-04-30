@@ -1,46 +1,37 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include <iostream>
-#include "MaskFilter.h"
-#include "RankFilter.h"
+#include <string>
+#include "Zad2.h"
+#define at at<cv::Vec3b>
+
+void zad1(cv::Mat& img)
+{
+    int S=0, L=0;
+    Tools::getSL(S, L, img);
+    std::cout << "S=" << S << ", L=" << L << ", W3=" << Tools::W3(S, L) << ", M1=" << Tools::M1(img, S) << ", M7=" << Tools::M7(img, S) << std::endl;
+}
 
 int main(int, char *[]) {
+    std::string names[] = { "elipsa.dib", "elipsa1.dib", "kolo.dib", "prost.dib", "troj.dib" }; //prost ob 392
     std::cout << "Start ..." << std::endl;
     std::cout << "Zadanie 1:" << std::endl;
-    cv::Mat image = cv::imread("Lena.bmp");
-    //quarterImg(image);
-    //float mask[5][5] = { {1,1,1,1,1}, {1,1,1,1,1}, {1,1,1,1,1}, {1,1,1,1,1}, {1,1,1,1,1} };
-    float mask[5][5] = { {-1,-1,-1,-1,-1}, {-1,-1,-1,-1,-1}, {-1,-1,24,-1,-1}, {-1,-1,-1,-1,-1}, {-1,-1,-1,-1,-1} };
-    MaskFilter f(image, mask);
-    cv::Mat filtered = f.filter();
-    cv::imshow("filtered", filtered);
-    cv::imshow("original", image);
-    cv::imwrite("lena_convfiltered.bmp", filtered);
-    filtered.release();
-    std::cout << "Aby kontynuowaæ, naciœnij dowolny klawisz na oknie z OpenCV" << std::endl;
-    cv::waitKey();
-    cv::destroyAllWindows();
-    std::cout << "Zadanie 2:" << std::endl;
-    std::cout << "Podaj n (rozmiar okna rankingowego: 2n+1 x 2n+1): ";
-    int n, idx, size;
-    std::cin >> n;
-    std::cout << "Podaj indeks filtru: ";
-    std::cin >> idx;
-    size = (2 * n + 1) * (2 * n + 1);
-    while (idx >= size)
+    for each (auto file in names)
     {
-        std::cout << "B£¥D: indeks nie mieœci siê w oknie rankingowym. Podaj liczbê od 0 do " << size-1 << std::endl;
-        std::cout << "Podaj indeks filtru: ";
-        std::cin >> idx;
+        std::cout << "Plik " << file << "  ";
+        cv::Mat image = cv::imread(file);
+        zad1(image);
+        //cv::imshow("", image);
+        //cv::waitKey();
+        //cv::destroyAllWindows();
     }
-    RankFilter rf(image, n, idx);
-    filtered = rf.filter();
-    cv::imshow("filtered", filtered);
-    cv::imshow("original", image);
-    cv::imwrite("lena_rankfiltered.bmp", filtered);
-    filtered.release();
-    cv::waitKey();
-    cv::destroyAllWindows();
-    std::cout << "Obrazy wynikowe zosta³y zapisane jako lena_convfiltered oraz lena_rankfiltered" << std::endl;
+    std::string names_2[] = { "strzalki_1.dib", "strzalki_2.dib" };
+    std::cout << "Zadanie 2:" << std::endl;
+    for each (auto file in names_2)
+    {
+        std::cout << "Plik " << file << std::endl;
+        Zad2 z(cv::imread(file));
+    }
+    
     return 0;
 }
