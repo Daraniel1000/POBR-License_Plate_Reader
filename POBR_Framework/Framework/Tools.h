@@ -3,7 +3,7 @@
 #include <cmath>
 #define at at<cv::Vec3b>
 
-const int pi = 3.14159265358979323846;
+const double pi = 3.14159265358979323846;
 
 class Tools
 {
@@ -21,10 +21,14 @@ public:
 
     static bool checkNeighbors(const int& x, const int& y, const cv::Mat& img)
     {
-        if (getBrightness(img.at(y + 1, x)) > 200) return true;
-        if (getBrightness(img.at(y - 1, x)) > 200) return true;
-        if (getBrightness(img.at(y, x + 1)) > 200) return true;
-        if (getBrightness(img.at(y, x - 1)) > 200) return true;
+        if(y<img.rows-1)
+            if (getBrightness(img.at(y + 1, x)) > 200) return true;
+        if(y>0)
+            if (getBrightness(img.at(y - 1, x)) > 200) return true;
+        if (x < img.cols - 1)
+            if (getBrightness(img.at(y, x + 1)) > 200) return true;
+        if(x>0)
+            if (getBrightness(img.at(y, x - 1)) > 200) return true;
         return false;
     }
 

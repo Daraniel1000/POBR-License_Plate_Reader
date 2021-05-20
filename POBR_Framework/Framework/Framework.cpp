@@ -2,36 +2,45 @@
 #include "opencv2/highgui/highgui.hpp"
 #include <iostream>
 #include <string>
-#include "Zad2.h"
-#define at at<cv::Vec3b>
+#include<fstream>
+#include "CvFuncs.h"
+//#define at at<cv::Vec3b>
 
-void zad1(cv::Mat& img)
-{
-    int S=0, L=0;
-    Tools::getSL(S, L, img);
-    std::cout << "S=" << S << ", L=" << L << ", W3=" << Tools::W3(S, L) << ", M1=" << Tools::M1(img, S) << ", M7=" << Tools::M7(img, S) << std::endl;
+void work() {
+    std::string s;
+    std::cout << "filename: ";
+    std::cin >> s;
+    cv::Mat img = cv::imread("wzorce/" + s + ".jpg");
+    if (img.empty()) return;
+    ccv::grayscale_Destructive(img);
+    ccv::contrast_Destructive(img, 2.0F);
+    cv::Mat copy = ccv::eqHist(img);
+    ccv::thresholding_Destructive(copy, 100);
+    copy = ccv::open(ccv::close(copy));
+    cv::imshow("open(close)", copy);
+    //cv::imshow("Close(open)", ccv::close(ccv::open(copy)));
+    float W3, M1, M7;
+    ccv::calculateValues(copy, W3, M1, M7); //M1 and M7 weighted towards center of object already
+    //further TODO - script calculation and saving values of all template pictures
+    //even further TODO - script checking for closest match in template values
+    //even even further TODO - script searching for object masks in original picture cropped to board
+    std::cout << s << ": W3=" << W3 << ", M1=" << M1 << ", M7=" << M7 << std::endl;
+    cv::waitKey();
+    cv::destroyAllWindows();
 }
 
 int main(int, char *[]) {
-    std::string names[] = { "elipsa.dib", "elipsa1.dib", "kolo.dib", "prost.dib", "troj.dib" }; //prost ob 392
-    std::cout << "Start ..." << std::endl;
-    std::cout << "Zadanie 1:" << std::endl;
-    for each (auto file in names)
+    while (true)
     {
-        std::cout << "Plik " << file << "  ";
-        cv::Mat image = cv::imread(file);
-        zad1(image);
-        //cv::imshow("", image);
-        //cv::waitKey();
-        //cv::destroyAllWindows();
+        work();
     }
-    std::string names_2[] = { "strzalki_1.dib", "strzalki_2.dib" };
-    std::cout << "Zadanie 2:" << std::endl;
-    for each (auto file in names_2)
-    {
-        std::cout << "Plik " << file << std::endl;
-        Zad2 z(cv::imread(file));
-    }
-    
+    /*std::ifstream fin(s + ".txt");
+    int l, t, r, b;
+    fin >> l >> t >> r >> b;
+    cv::Rect rect(cv::Point(l,t), cv::Point(r,b));
+    ccv::eqHist_Destructive(img);
+    int W3, M1, M7;
+    ccv::calculateValues(img, W3, M1, M7);
+    std::cout << s << ": W3=" << W3 << ", M1=" << M1 << ", M7=" << M7 << std::endl;*/
     return 0;
 }
