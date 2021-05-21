@@ -1,12 +1,65 @@
 #pragma once
+#include<queue>
 #include "opencv2/core/core.hpp"
 #include "Tools.h"
 #define at at<cv::Vec3b>
 #define WHITE cv::Vec3b(255, 255, 255)
-#define BLACK  cv::Vec3b(0, 0, 0)
+#define BLACK cv::Vec3b(0, 0, 0)
 
 namespace ccv {
 
+    cv::Mat negative(const cv::Mat& img)
+    {
+        cv::Mat copy = cv::Mat::zeros(cv::Size(img.cols, img.rows), CV_8UC3); 
+        const int w = img.cols;
+        const int h = img.rows;
+        for (int j = 0; j < h; ++j)
+        {
+            for (int i = 0; i < w; ++i)
+            {
+                copy.at(j, i) = img.at(j, i)[0] == 0 ? WHITE : BLACK;
+            }
+        }
+        return copy;
+    }
+
+    cv::Mat maskObject(const cv::Mat& img, const cv::Point initial, cv::Point& minBound, cv::Point& maxBound)
+    {
+        std::queue<cv::Point> toSearch;
+        toSearch.push(initial);
+        cv::Mat mask = cv::Mat::zeros(cv::Size(img.cols, img.rows), CV_8UC3);
+        cv::Point p, temp;
+        int i, j;
+        int maxX = 0, minX = img.cols, maxY = 0, minY = img.rows;
+        while (!toSearch.empty())
+        {
+            p = toSearch.front();
+            toSearch.pop();
+            if (mask.at(p)[0] > 0) continue;
+            if (p.x > maxX) maxX = p.x;
+            if (p.y > maxY) maxY = p.y;
+            if (p.x < minX) minX = p.x;
+            if (p.y < minY) minY = p.y;
+            mask.at(p) = WHITE;
+            for (j = -1; j < 2; ++j)
+            {
+                for (i = -1; i < 2; ++i)
+                {
+                    temp = cv::Point(p.x + i, p.y + j);
+                    if (temp.x < 0 || temp.x >= img.cols) continue;
+                    if (temp.y < 0 || temp.y >= img.rows) continue;
+                    if(mask.at(temp)[0] > 0) continue;
+                    if (img.at(temp) == BLACK)
+                    {
+                        toSearch.push(temp);
+                    }
+                }
+            }
+        }
+        minBound = cv::Point(minX, minY);
+        maxBound = cv::Point(maxX, maxY);
+        return mask;
+    }
 
     int getBrightness(const cv::Vec3b pix)
     {
@@ -82,8 +135,6 @@ namespace ccv {
 
     cv::Mat dilate(const cv::Mat& img, bool** mask = nullptr)
     {
-        //const cv::Vec3b WHITE = cv::Vec3b(255, 255, 255);
-        //const cv::Vec3b BLACK = cv::Vec3b(0, 0, 0);
         if (mask == nullptr)
         {
             mask = new bool*[3];
@@ -109,7 +160,7 @@ namespace ccv {
 
     cv::Mat open(const cv::Mat& img)
     {
-        return dilate(erode(img));
+        return dilate(dilate(erode(erode(img))));
     }
 
     cv::Mat close(const cv::Mat& img)
@@ -187,6 +238,14 @@ namespace ccv {
         }
     }
 
+    cv::Mat grayscale(const cv::Mat& img)
+    {
+        cv::Mat copy;
+        img.copyTo(copy);
+        grayscale_Destructive(copy);
+        return copy;
+    }
+
     void thresholding_Destructive(cv::Mat& img, const uchar thresh, const bool negative = false)
     {
         //const cv::Vec3b WHITE = cv::Vec3b(255, 255, 255);
@@ -223,59 +282,5 @@ namespace ccv {
         img.copyTo(copy);
         thresholding_Destructive(copy, thresh, negative);
         return copy;
-    }
-
-    void RGBtoHSV_Destructive(cv::Mat& img) //H - 0, S - 1, V - 2
-    {                                       //H 0 to 180
-        const int w = img.cols; //indexing is typical: 512px, 0 to 511
-        const int h = img.rows;
-        cv::Vec3f pix;
-        int r, g, b, cmax, cmin, delta, temp;
-        for (int j = 0; j < h; ++j)
-        {
-            for (int i = 0; i < w; ++i)
-            {
-                pix = img.at(cv::Point(i, j));
-                r = pix.val[2];
-                g = pix.val[1];
-                b = pix.val[0];
-                cmax = std::max(r, std::max(g, b));
-                cmin = std::min(r, std::min(g, b));
-                delta = cmax - cmin;
-                pix[2] = cmax;
-                if (cmax == 0)
-                {
-                    pix[1] = 0;
-                }
-                else
-                {
-                    pix[1] = (delta / cmax) * 255;
-                }
-                if (delta == 0)
-                {
-                    pix[0] = 0;
-                }
-                else
-                {
-                    if (cmax == r)
-                    {
-                        temp = (g - b) / delta;
-                        temp = temp % 6;
-                    }
-                    else if (cmax == g)
-                    {
-                        temp = (b - r) / delta;
-                        temp += 2;
-                    }
-                    else
-                    {
-                        temp = (r - g) / delta;
-                        temp += 4;
-                    }
-                    pix[0] = temp;
-                }
-                img.at(cv::Point(i, j)) = pix;
-            }
-        }
     }
 }

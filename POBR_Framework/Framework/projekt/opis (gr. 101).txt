@@ -1,0 +1,4 @@
+101 
+Maciej Kapuściński
+Program będzie odczytywał numery z tablic rejestracyjnych. 
+Wstępnie program będzie wczytywał bounding boxy tablic na zdjęciach, jeśli będzie czas (i potrzeba) to rozszerzę o znajdowanie tych bounding boxów na całych zdjęciach.
