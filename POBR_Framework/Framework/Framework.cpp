@@ -11,7 +11,7 @@
 const std::vector<std::string> templates({ "0", "1", "2", "4", "5", "6", "7", "8", "9", "d", "e", "f", "g", "j", "k", "p", "r", "s", "v", "w", "x", "y" });
 
 void prepTemplates() {
-    std::ofstream fout("wzorce/log.txt");
+    std::ofstream fout("wzorce/_log.txt");
     for each (std::string s in templates)
     {
         cv::Mat img = cv::imread("wzorce/" + s + ".jpg");
@@ -22,35 +22,83 @@ void prepTemplates() {
         ccv::eqHist_Destructive(img);
         ccv::thresholding_Destructive(img, 100);
         img = ccv::open(ccv::close(img));
-        float W3, M1, M7;
-        ccv::calculateValues(img, W3, M1, M7); //M1 and M7 weighted towards center of object already
-        fout << s << ": W3=" << W3 << ", M1=" << M1 << ", M7=" << M7 << std::endl;
-        file << W3 << std::endl << M1 << std::endl << M7;
+        std::vector<float> vals = ccv::calculateValues(img);
+        fout << s << ":";
+        int i = 1;
+        for each (float var in vals)
+        {
+            fout << " M" << i++ << "=" << var;
+            file << var << std::endl;
+        }
+        fout << "\n";
         file.close();
-        cv::imshow("", img);
+        /*cv::imshow("", img);
         cv::waitKey();
-        cv::destroyAllWindows();
+        cv::destroyAllWindows();*/
     }
     fout.close();
 }
 
 std::string compare(const cv::Mat& img)
 {
+    //maybe normalize the values?
     cv::Mat copy = ccv::negative(img);
-    float W3, M1, M7;
-    ccv::calculateValues(copy, W3, M1, M7);
-    float W3t, M1t, M7t;
+    std::vector<float> vals = ccv::calculateValues(copy);
     int mind = 0, i = 0;
-    M1 *= 10; M7 *= 100;
-    std::vector<float> distances;
+    std::vector<std::vector<float>> all_values;
+    const int factors[4] = {1, 10, 10, 100 };
     for each (std::string s in templates)
     {
         std::ifstream fin("wzorce/" + s + ".txt");
         if (!fin.is_open()) throw std::runtime_error("Required template file is missing");
-        fin >> W3t >> M1t >> M7t;
-        M1t *= 10; M7t *= 100;
-        distances.push_back(std::abs(W3 - W3t) + std::abs(M1 - M1t) + std::abs(M7 - M7t));
-        if (distances[i] < distances[mind]) mind = i;
+        float Nt, dist = 0;
+        int j = 0;
+        std::vector<float> valst;
+        for each (float var in vals)
+        {
+            fin >> Nt;
+            valst.push_back(Nt);
+            //dist += std::abs(var - Nt) * factors[j++];
+        }
+        all_values.push_back(valst);
+        //if (distances[i] < distances[mind]) mind = i;
+        ++i;
+        fin.close();
+    }
+    //now for every val normalize min/max values to [0, 10] for proppa distance calculaziones
+    for (int i = 0; i < vals.size(); ++i)
+    {
+        std::vector<float> thisN;
+        int mini=0, maxi=0, j=0;
+        for each (std::vector<float> vars in all_values)
+        {
+            thisN.push_back(vars[i]);
+            if (thisN[j] < thisN[mini]) mini = j;
+            if (thisN[j] > thisN[maxi]) maxi = j;
+            ++j;
+        }
+        float offset, multiplier;
+        offset = -thisN[mini];
+        multiplier = 10 / (thisN[maxi] + offset);
+        for (int k=0; k < all_values.size(); ++k)
+        {
+            all_values[k][i] = std::abs(((all_values[k][i] + offset) - (vals[i] + offset))* multiplier);
+        }
+    }
+    i = 0;
+    std::vector<float> distances;
+    for each (std::vector<float> vars in all_values)
+    {
+        float dist = 0;
+        for each (float v in vars)
+        {
+            dist += v;
+        }
+        distances.push_back(dist);
+    }
+    for each (float dist in distances)
+    {
+        if (dist < distances[mind]) mind = i;
         ++i;
     }
     return templates[mind];
@@ -59,10 +107,15 @@ std::string compare(const cv::Mat& img)
 void work(std::string s)
 {
     std::ifstream fin("projekt/" + s + ".txt");
+    cv::Mat img = cv::imread("projekt/" + s + ".jpg"), obj;
+    if (!fin.is_open() || img.empty())
+    {
+        std::cout << "Files not found\n";
+        return;
+    }
     int l, t, r, b;
     fin >> l >> t >> r >> b;
     cv::Rect rect(cv::Point(l, t), cv::Point(r, b));
-    cv::Mat img = cv::imread("projekt/" + s + ".jpg"), obj; 
     cv::Mat copy(img, rect);
     cv::Mat cropped;
     cv::resize(copy, cropped, cv::Size(256*copy.cols/copy.rows, 256));

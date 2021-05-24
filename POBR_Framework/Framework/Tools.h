@@ -70,7 +70,7 @@ public:
         return M;
     }
 
-    static float Npq(const int p, const int q, const cv::Mat& img, const int& S, const cv::Vec3b color)
+    static float Npq(const int p, const int q, const cv::Mat& img, const int& S, const cv::Vec3b color = cv::Vec3b(0,0,0))
     {
         return Mpq(p, q, img, S, color) / pow(S, ((p + q) / 2) + 1);
     }
@@ -80,9 +80,72 @@ public:
         return Npq(2, 0, img, S, color) + Npq(0, 2, img, S, color);
     }
 
+    static float M2(const cv::Mat& img, const int& S)
+    {
+        return pow((Npq(2, 0, img, S) - Npq(0, 2, img, S)), 2) + 4 * pow(Npq(1, 1, img, S), 2);
+    }
+
+    static float M3(const cv::Mat& img, const int& S)
+    {
+        return pow((Npq(3, 0, img, S) - 3 * Npq(1, 2, img, S)), 2) + pow(3 * Npq(2, 1, img, S) - Npq(0, 3, img, S), 2);
+    }
+
+    static float M4(const cv::Mat& img, const int& S)
+    {
+        return pow((Npq(3, 0, img, S) + Npq(1, 2, img, S)), 2) + pow(Npq(2, 1, img, S) + Npq(0, 3, img, S), 2);
+    }
+
+    static float M5(const cv::Mat& img, const int& S)
+    {
+        float N30, N12, N21, N03;
+        N30 = Npq(3, 0, img, S);
+        N12 = Npq(1, 2, img, S);
+        N03 = Npq(0, 3, img, S);
+        N21 = Npq(2, 1, img, S);
+        return (N30 - 3 * N12) * (N30 + N12) * (pow(N30 + N12, 2) - 3 * pow(N21 + N03, 2)) + (3 * N21 - N03) * (N21 + N03) * (3 * pow(N30 + N12, 2) - pow(N21 + N03, 2));
+    }
+
+    static float M6(const cv::Mat& img, const int& S)
+    {
+        float N30, N12, N21, N03;
+        N30 = Npq(3, 0, img, S);
+        N12 = Npq(1, 2, img, S);
+        N03 = Npq(0, 3, img, S);
+        N21 = Npq(2, 1, img, S);
+        return (Npq(2, 0, img, S) - Npq(0, 2, img, S)) * (pow(N30 + N12, 2) - pow(N21 + N03, 2)) + 4 * Npq(1, 1, img, S) * (N30 + N12) * (N21 + N03);
+    }
+
     static float M7(const cv::Mat& img, const int& S, const cv::Vec3b color = cv::Vec3b(0, 0, 0))
     {
         return Npq(2, 0, img, S, color) * Npq(0, 2, img, S, color) - pow(Npq(1, 1, img, S, color), 2);
+    }
+
+    static float M8(const cv::Mat& img, const int& S)
+    {
+        float N12, N21;
+        N12 = Npq(1, 2, img, S);
+        N21 = Npq(2, 1, img, S);
+        return Npq(3, 0, img, S) * N12 + N21 * Npq(0, 3, img, S) - N12 * N12 - N21 * N21;
+    }
+
+    static float M9(const cv::Mat& img, const int& S)
+    {
+        float N30, N12, N21, N03;
+        N30 = Npq(3, 0, img, S);
+        N12 = Npq(1, 2, img, S);
+        N03 = Npq(0, 3, img, S);
+        N21 = Npq(2, 1, img, S);
+        return Npq(2, 0, img, S) * (N21 * N03 - N12 * N12) + Npq(0, 2, img, S) * (N30 * N12 - N21 * N21) - Npq(1, 1, img, S) * (N30 * N03 - N21 * N12);
+    }
+
+    static float M10(const cv::Mat& img, const int& S)
+    {
+        float N30, N12, N21, N03;
+        N30 = Npq(3, 0, img, S);
+        N12 = Npq(1, 2, img, S);
+        N03 = Npq(0, 3, img, S);
+        N21 = Npq(2, 1, img, S);
+        return pow(N30 * N03 - N12 * N21, 2) - 4 * (N30 * N12 - N21 * N21) * (N03 * N21 - N12);
     }
 
     static void getSL(int& S, int& L, const cv::Mat& img, const cv::Vec3b color = cv::Vec3b(0,0,0))

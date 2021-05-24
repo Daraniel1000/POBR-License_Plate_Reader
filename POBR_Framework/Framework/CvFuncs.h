@@ -168,13 +168,23 @@ namespace ccv {
         return erode(dilate(img));
     }
 
-    void calculateValues(const cv::Mat& img, float& W3, float& M1, float& M7)
+    std::vector<float> calculateValues(const cv::Mat& img)
     {
         int S = 0, L = 0;
         Tools::getSL(S, L, img);
-        W3 = Tools::W3(S, L);
-        M1 = Tools::M1(img, S);
-        M7 = Tools::M7(img, S);
+        std::vector<float> vals;
+        vals.push_back(Tools::W3(S, L));
+        vals.push_back(Tools::M1(img, S));
+        vals.push_back(Tools::M2(img, S));
+        //vals.push_back(Tools::M3(img, S));
+        //vals.push_back(Tools::M4(img, S));
+        //vals.push_back(Tools::M5(img, S));
+        //vals.push_back(Tools::M6(img, S));
+        vals.push_back(Tools::M7(img, S));
+        //vals.push_back(Tools::M8(img, S));
+        //vals.push_back(Tools::M9(img, S));
+        //vals.push_back(Tools::M10(img, S));
+        return vals;
     }
 
     void calcHist(const cv::Mat& img, int hist[256])   //grayscale
