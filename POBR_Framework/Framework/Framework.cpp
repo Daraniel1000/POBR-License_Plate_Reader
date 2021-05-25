@@ -22,7 +22,11 @@ void prepTemplates() {
         ccv::eqHist_Destructive(img);
         ccv::thresholding_Destructive(img, 100);
         img = ccv::open(ccv::close(img));
-        std::vector<float> vals = ccv::calculateValues(img);
+        cv::Point start = cv::Point(0, img.rows / 2), p1, p2;
+        while (img.at(start)[0] == 0) start.x++;
+        while (img.at(start)[0] > 0) start.x++;
+        cv::Mat obj = ccv::maskObject(img, start, p1, p2);
+        std::vector<float> vals = ccv::calculateValues(ccv::negative(cv::Mat(obj, cv::Rect(p1, p2))));
         fout << s << ":";
         int i = 1;
         for each (float var in vals)
@@ -65,7 +69,7 @@ std::string compare(const cv::Mat& img)
         ++i;
         fin.close();
     }
-    //now for every val normalize min/max values to [0, 10] for proppa distance calculaziones
+    //now for every val scale to [0, 10]
     for (int i = 0; i < vals.size(); ++i)
     {
         std::vector<float> thisN;
