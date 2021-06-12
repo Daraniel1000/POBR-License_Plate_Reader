@@ -121,15 +121,12 @@ std::string compare(const cv::Mat& img)
 
 void work(std::string s, cv::Rect rect)
 {
-    std::ifstream fin("projekt/" + s + ".txt");
     cv::Mat img = cv::imread("projekt/" + s + ".jpg"), obj;
-    if (!fin.is_open() || img.empty())
+    if (img.empty())
     {
         std::cout << "Files not found\n";
         return;
     }
-    int l, t, r, b;
-    fin >> l >> t >> r >> b;
     cv::resize(img, obj, cv::Size(1280, 720));
     cv::Mat copy(obj, rect);
     cv::Mat cropped;
@@ -157,14 +154,14 @@ void work(std::string s, cv::Rect rect)
         obj = ccv::maskObject(cropped, start, p1, p2);
         code += compare(cv::Mat(obj, cv::Rect(p1, p2)));
         //cv::imshow("", cv::Mat(obj, cv::Rect(p1, p2)));
-        std::cout << code[code.length() - 1];
+        //std::cout << code[code.length() - 1];
         //cv::waitKey();
         cv::destroyAllWindows();
         start.y = p1.y + (p2.y - p1.y) / 4;
         start.x = p2.x;
         //if (code.length() >= 7) break;
     }
-    std::cout << "\nCode recovered: " << code << std::endl;
+    std::cout << "Code recovered: " << code << "\n\n";
 }
 
 int main(int argc, char* argv[]) {
@@ -185,14 +182,19 @@ int main(int argc, char* argv[]) {
     {
         prepTemplates();
     }
-    std::cout << "Enter 0 to exit the program\n";
     while (true)
     {
+        std::cout << "Enter 0 to exit the program\n";
         std::string s;
         std::cout << "Image id: ";
         std::cin >> s;
         if (s == "0") break;
         cv::Mat img = cv::imread("projekt/" + s + ".jpg"), obj;
+        if (img.empty())
+        {
+            std::cout << "Files not found\n";
+            return 0;
+        }
         cv::resize(img, obj, cv::Size(1280, 720));
         LicensePlateFinder finder(obj);
         std::cout << "Searching for license plates\n";
