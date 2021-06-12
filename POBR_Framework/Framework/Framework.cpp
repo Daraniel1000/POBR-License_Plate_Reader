@@ -196,7 +196,7 @@ int main(int argc, char* argv[]) {
         cv::resize(img, obj, cv::Size(1280, 720));
         LicensePlateFinder finder(obj);
         std::cout << "Searching for license plates\n";
-        std::cout << "Warning: this step may take over 5 minutes\n" << std::endl;
+        std::cout << "Warning: this step may take up to 5 minutes\n";
         finder.work();
         //finder.boxes.push_back(cv::Rect(cv::Point(267, 360), cv::Point(267 + 597, 360 + 147)));
         for each (cv::Rect box in finder.boxes)
