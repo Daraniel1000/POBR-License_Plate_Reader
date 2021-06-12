@@ -73,9 +73,9 @@
         assert(mask.cols == img.cols && mask.rows == img.rows);
         const int w = img.cols;
         const int h = img.rows;
-        for (int j = lower.y; j < upper.y; ++j)
+        for (int j = lower.y; j <= upper.y; ++j)
         {
-            for (int i = lower.x; i < upper.x; ++i)
+            for (int i = lower.x; i <= upper.x; ++i)
             {
                 if (mask.at(j, i) == WHITE) img.at(cv::Point(i, j)) = BLACK;
             }
