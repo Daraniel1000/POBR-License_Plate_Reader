@@ -1,10 +1,10 @@
 #include "MaskFilter.h"
 
-MaskFilter::MaskFilter(cv::Mat& i, float m[5][5]) : image{ i }
+MaskFilter::MaskFilter(cv::Mat& i, float m[3][3]) : image{ i }
 {
-	for (int i = 0; i < 5; ++i)
+	for (int i = 0; i < 3; ++i)
 	{
-		for (int j = 0; j < 5; ++j)
+		for (int j = 0; j < 3; ++j)
 		{
 			mask[i][j] = m[i][j];
 		}

@@ -158,6 +158,8 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CvFuncs.cpp" />
+    <ClCompile Include="LicensePlateFinder.cpp" />
     <ClCompile Include="MaskFilter.cpp" />
     <ClCompile Include="Framework.cpp" />
     <ClCompile Include="RankFilter.cpp" />
@@ -166,6 +168,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CvFuncs.h" />
+    <ClInclude Include="LicensePlateFinder.h" />
     <ClInclude Include="MaskFilter.h" />
     <ClInclude Include="RankFilter.h" />
     <ClInclude Include="Tools.h" />

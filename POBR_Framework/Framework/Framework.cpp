@@ -1,3 +1,4 @@
+#pragma once
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc.hpp"
@@ -6,14 +7,23 @@
 #include <fstream>
 #include <vector>
 #include "CvFuncs.h"
+#include "LicensePlateFinder.h"
 //#define at at<cv::Vec3b>
 
 const std::vector<std::string> templates({ "0", "1", "2", "4", "5", "6", "7", "8", "9", "d", "e", "f", "g", "j", "k", "p", "r", "s", "v", "w", "x", "y" });
+
+void showAndWait(const cv::Mat& img, const std::string s="")
+{
+    cv::imshow(s, img);
+    cv::waitKey();
+    cv::destroyAllWindows();
+}
 
 void prepTemplates() {
     std::ofstream fout("wzorce/_log.txt");
     for each (std::string s in templates)
     {
+        std::cout << "Preparing template for " << s << std::endl;
         cv::Mat img = cv::imread("wzorce/" + s + ".jpg");
         std::ofstream file("wzorce/" + s + ".txt");
         if (!file.is_open() || img.empty()) throw std::runtime_error("Required template file is missing");
@@ -36,9 +46,7 @@ void prepTemplates() {
         }
         fout << "\n";
         file.close();
-        /*cv::imshow("", img);
-        cv::waitKey();
-        cv::destroyAllWindows();*/
+        //showAndWait(img);
     }
     fout.close();
 }
@@ -77,8 +85,10 @@ std::string compare(const cv::Mat& img)
         for each (std::vector<float> vars in all_values)
         {
             thisN.push_back(vars[i]);
-            if (thisN[j] < thisN[mini]) mini = j;
-            if (thisN[j] > thisN[maxi]) maxi = j;
+            if (thisN[j] < thisN[mini]) 
+                mini = j;
+            if (thisN[j] > thisN[maxi])
+                maxi = j;
             ++j;
         }
         float offset, multiplier;
@@ -102,13 +112,14 @@ std::string compare(const cv::Mat& img)
     }
     for each (float dist in distances)
     {
-        if (dist < distances[mind]) mind = i;
+        if (dist < distances[mind]) 
+            mind = i;
         ++i;
     }
     return templates[mind];
 }
 
-void work(std::string s)
+void work(std::string s, cv::Rect rect)
 {
     std::ifstream fin("projekt/" + s + ".txt");
     cv::Mat img = cv::imread("projekt/" + s + ".jpg"), obj;
@@ -119,24 +130,16 @@ void work(std::string s)
     }
     int l, t, r, b;
     fin >> l >> t >> r >> b;
-    cv::Rect rect(cv::Point(l, t), cv::Point(r, b));
-    cv::Mat copy(img, rect);
+    cv::resize(img, obj, cv::Size(1280, 720));
+    cv::Mat copy(obj, rect);
     cv::Mat cropped;
     cv::resize(copy, cropped, cv::Size(256*copy.cols/copy.rows, 256));
     ccv::grayscale_Destructive(cropped);
     ccv::contrast_Destructive(cropped, 2.0F);
-    cv::imshow("", cropped);
-    cv::waitKey();
-    cv::destroyAllWindows();
     ccv::eqHist_Destructive(cropped);
-    cv::imshow("", cropped);
-    cv::waitKey();
-    cv::destroyAllWindows();
     ccv::thresholding_Destructive(cropped, 100);
     cropped = ccv::open(ccv::close(cropped));
-    cv::imshow("", cropped);
-    cv::waitKey();
-    cv::destroyAllWindows();
+    //showAndWait(cropped);
     cv::Point p1, p2, start;
     start = cv::Point(0, cropped.rows / 2);
     std::string code = "";
@@ -146,19 +149,22 @@ void work(std::string s)
             start.x++;
         while (cropped.at(start)[0] > 0 && start.x < cropped.cols - 1)
             start.x++;
-        if (start.x == cropped.cols) break;
+        if (start.x >= cropped.cols-1) break;
+        p1 = start;
+        while (cropped.at(p1)[0] == 0 && p1.x < cropped.cols - 1)
+            p1.x++;
+        if (p1.x >= cropped.cols - 1) break;
         obj = ccv::maskObject(cropped, start, p1, p2);
         code += compare(cv::Mat(obj, cv::Rect(p1, p2)));
-        cv::imshow("", cv::Mat(obj, cv::Rect(p1, p2)));
+        //cv::imshow("", cv::Mat(obj, cv::Rect(p1, p2)));
         std::cout << code[code.length() - 1];
-        cv::waitKey();
+        //cv::waitKey();
         cv::destroyAllWindows();
         start.y = p1.y + (p2.y - p1.y) / 4;
         start.x = p2.x;
-        if (code.length() >= 7) break;
+        //if (code.length() >= 7) break;
     }
     std::cout << "\nCode recovered: " << code << std::endl;
-    if (start.x == cropped.cols) std::cout << "Did not hit every object" << std::endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -175,7 +181,7 @@ int main(int argc, char* argv[]) {
             return 0;
         }
     }
-    if (b)//argc == 1)
+    if (b)
     {
         prepTemplates();
     }
@@ -186,7 +192,18 @@ int main(int argc, char* argv[]) {
         std::cout << "Image id: ";
         std::cin >> s;
         if (s == "0") break;
-        work(s);
+        cv::Mat img = cv::imread("projekt/" + s + ".jpg"), obj;
+        cv::resize(img, obj, cv::Size(1280, 720));
+        LicensePlateFinder finder(obj);
+        std::cout << "Searching for license plates\n";
+        std::cout << "Warning: this step may take over 5 minutes\n" << std::endl;
+        finder.work();
+        //finder.boxes.push_back(cv::Rect(cv::Point(267, 360), cv::Point(267 + 597, 360 + 147)));
+        for each (cv::Rect box in finder.boxes)
+        {
+            std::cout << "Reading license plate\n";
+            work(s, box);
+        }
     }
     return 0;
 }
