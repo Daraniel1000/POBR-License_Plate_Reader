@@ -10,7 +10,7 @@
 #include "LicensePlateFinder.h"
 //#define at at<cv::Vec3b>
 
-const std::vector<std::string> templates({ "0", "1", "2", "4", "5", "6", "7", "8", "9", "d", "e", "f", "g", "j", "k", "p", "r", "s", "v", "w", "x", "y" });
+const std::vector<std::string> templates({ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "d", "e", "f", "g", "i", "j", "k", "l", "p", "r", "s", "u", "v", "w", "x", "y" });
 
 void showAndWait(const cv::Mat& img, const std::string s="")
 {
@@ -46,7 +46,7 @@ void prepTemplates() {
         }
         fout << "\n";
         file.close();
-        //showAndWait(img);
+        //showAndWait(obj);
     }
     fout.close();
 }
@@ -131,6 +131,8 @@ void work(std::string s, cv::Rect rect)
     cv::Mat copy(obj, rect);
     cv::Mat cropped;
     cv::resize(copy, cropped, cv::Size(256*copy.cols/copy.rows, 256));
+    //ccv::whitenBlues_destructive(cropped);
+    //showAndWait(cropped);
     ccv::grayscale_Destructive(cropped);
     ccv::contrast_Destructive(cropped, 2.0F);
     ccv::eqHist_Destructive(cropped);
@@ -139,6 +141,13 @@ void work(std::string s, cv::Rect rect)
     //showAndWait(cropped);
     cv::Point p1, p2, start;
     start = cv::Point(0, cropped.rows / 2);
+    if (cropped.at(start)[0] == 0)
+    {
+        cv::Point lower, upper;
+        cv::Mat mask = ccv::maskObject(cropped, start, lower, upper);
+        ccv::fill(cropped, mask, lower, upper, true);
+    }
+    //showAndWait(cropped);
     std::string code = "";
     while (start.x < cropped.cols - 1)
     {
