@@ -8,9 +8,11 @@
 
 namespace ccv {
 
+    void whitenBlues_destructive(cv::Mat& img);
+
     cv::Mat hough(const cv::Mat& img);
 
-    void blacken(cv::Mat& img, const cv::Mat& mask, const cv::Point lower, const cv::Point upper);
+    void fill(cv::Mat& img, const cv::Mat& mask, const cv::Point lower, const cv::Point upper, const bool negative = false);
 
     cv::Mat negative(const cv::Mat& img);
 

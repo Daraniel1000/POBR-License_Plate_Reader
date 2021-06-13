@@ -31,7 +31,7 @@ void LicensePlateFinder::work()
                         boxes.push_back(cv::Rect(lower, upper));
                     }
                 }
-                ccv::blacken(img, objMask, lower, upper);
+                ccv::fill(img, objMask, lower, upper);
             }
         }
     }

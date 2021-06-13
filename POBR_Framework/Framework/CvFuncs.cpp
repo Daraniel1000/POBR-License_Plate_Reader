@@ -7,6 +7,20 @@
 #define WHITE cv::Vec3b(255, 255, 255)
 #define BLACK cv::Vec3b(0, 0, 0)
 
+    void ccv::whitenBlues_destructive(cv::Mat& img)
+    {
+        const int w = img.cols;
+        const int h = img.rows;
+        cv::Vec3b px;
+        for (int j = 0; j < h; ++j)
+        {
+            for (int i = 0; i < w; ++i)
+            {
+                px = img.at(j, i);
+                if (px[0] > px[1] + px[2]) img.at(j, i) = WHITE;
+            }
+        }
+    }
 
     cv::Mat ccv::negative(const cv::Mat& img)
     {
@@ -68,7 +82,7 @@
         return hough_space;
     }
 
-    void ccv::blacken(cv::Mat& img, const cv::Mat& mask, const cv::Point lower, const cv::Point upper)
+    void ccv::fill(cv::Mat& img, const cv::Mat& mask, const cv::Point lower, const cv::Point upper, const bool negative)
     {
         assert(mask.cols == img.cols && mask.rows == img.rows);
         const int w = img.cols;
@@ -77,7 +91,7 @@
         {
             for (int i = lower.x; i <= upper.x; ++i)
             {
-                if (mask.at(j, i) == WHITE) img.at(cv::Point(i, j)) = BLACK;
+                if (mask.at(j, i) == WHITE) img.at(cv::Point(i, j)) = negative?WHITE:BLACK;
             }
         }
     }
