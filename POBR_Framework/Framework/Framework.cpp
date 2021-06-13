@@ -201,6 +201,8 @@ int main(int argc, char* argv[]) {
         std::cout << "Warning: this step may take up to 5 minutes\n";
         finder.work();
         //finder.boxes.push_back(cv::Rect(cv::Point(267, 360), cv::Point(267 + 597, 360 + 147)));
+        if (finder.boxes.empty())
+            std::cout << "No license plates found\n";
         for each (cv::Rect box in finder.boxes)
         {
             std::cout << "Reading license plate\n";
